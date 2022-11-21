@@ -14,9 +14,9 @@ export interface EditorProps {
 }
 
 export const testComponents: ComponentData[] = [
-  { id: uuidv4(), name: 'l-txt', props: { text: 'hello' } },
-  { id: uuidv4(), name: 'l-txt', props: { text: 'hello1' } },
-  { id: uuidv4(), name: 'l-txt', props: { text: 'hello2' } },
+  { id: uuidv4(), name: 'l-text', props: { text: 'hello', fontSize: '22px' } },
+  { id: uuidv4(), name: 'l-text', props: { text: 'hello1' } },
+  { id: uuidv4(), name: 'l-text', props: { text: 'hello2' } },
 ]
 
 const editor: Module<EditorProps, GlobalDataProps> = {
