@@ -14,22 +14,32 @@
         <a-layout-content class="preview-container">
           <p>画布区域</p>
           <div class="preview-list" id="canvas-area">
-            <component
+            <EditWrapper
+              @click="setActive(comp.id)"
               v-for="comp in components"
-              :is="comp.name"
               :key="comp.id"
-              v-bind="comp.props"
+              :id="comp.id"
+              :active="comp.id === currentElement?.id"
             >
-            </component>
+              <component :is="comp.name" v-bind="comp.props"> </component>
+            </EditWrapper>
           </div>
         </a-layout-content>
       </a-layout>
       <a-layout-sider
         width="300"
-        style="background: purple"
+        style="background: pink"
         class="settings-panel"
       >
         组件属性
+        <props-table
+          v-if="currentElement && currentElement.props"
+          :props="currentElement.props"
+          @change="handleChange"
+        ></props-table>
+        <pre>
+          {{ currentElement && currentElement.props }}
+        </pre>
       </a-layout-sider>
     </a-layout>
   </div>
@@ -42,23 +52,40 @@ import { GlobalDataProps } from '@/store'
 import LText from '@/components/LText.vue'
 import ComponentsList from '@/components/ComponentsList.vue'
 import { defaultTextTemplates } from '@/defaultTemplates'
+import EditWrapper from '@/components/EditWrapper.vue'
+import { ComponentData } from '../store/modules/editor'
+import PropsTable from '@/components/PropsTable.vue'
 
 export default defineComponent({
   components: {
     LText,
     ComponentsList,
+    EditWrapper,
+    PropsTable,
   },
   setup() {
     const store = useStore<GlobalDataProps>()
     const components = computed(() => store.state.editor.components)
+    const currentElement = computed<ComponentData | null>(
+      () => store.getters.getCurrentElement
+    )
     const addItem = (props: any) => {
       store.commit('addComponent', props)
+    }
+    const setActive = (id: string) => {
+      store.commit('setActive', id)
+    }
+    const handleChange = (e: any) => {
+      store.commit('updateComponent', e)
     }
 
     return {
       components,
       defaultTextTemplates,
       addItem,
+      setActive,
+      currentElement,
+      handleChange,
     }
   },
 })
