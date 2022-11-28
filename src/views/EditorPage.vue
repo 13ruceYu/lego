@@ -54,6 +54,7 @@ import ComponentsList from '@/components/ComponentsList.vue'
 import { defaultTextTemplates } from '@/defaultTemplates'
 import EditWrapper from '@/components/EditWrapper.vue'
 import { ComponentData } from '../store/modules/editor'
+// import PropsTable from '@/components/PropsTable'
 import PropsTable from '@/components/PropsTable.vue'
 
 export default defineComponent({

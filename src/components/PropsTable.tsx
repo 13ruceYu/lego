@@ -1,36 +1,18 @@
-<template>
-  <div class="props-table">
-    <div v-for="(value, key) in finalProps" :key="key" class="prop-item">
-      <span class="prop-item__label">{{ value?.text }}</span>
-      <div class="prop-item__component">
-        <component
-          :is="value?.component"
-          :[value.valueProp]="value?.value"
-          v-bind="value?.extraProps"
-          v-on="value.events"
-        >
-          <template v-if="value?.options">
-            <component
-              :is="value.subComponent"
-              v-for="(option, i) in value.options"
-              :key="i"
-              :value="option.value"
-            >
-              <RenderVnode :vNode="option.text"></RenderVnode>
-            </component>
-          </template>
-        </component>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script lang="ts">
 import { TextComponentProps } from '@/defaultProps'
 import { mapPropsToForms } from '@/propsMap'
 import { reduce } from 'lodash'
 import { defineComponent, PropType, computed, VNode } from 'vue'
-import RenderVnode from './RenderVnode'
+import { Input, InputNumber, Slider, Radio, Select } from 'ant-design-vue'
+
+const mapToComponent = {
+  'a-textarea': Input.TextArea,
+  'a-input-number': InputNumber,
+  'a-slider': Slider,
+  'a-radio-group': Radio.Group,
+  'a-radio-button': Radio.Button,
+  'a-select': Select,
+  'a-select-option': Select.Option,
+} as any
 
 interface FormProps {
   component: string
@@ -44,6 +26,10 @@ interface FormProps {
   events: { [key: string]: (e: any) => void }
 }
 
+function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 export default defineComponent({
   name: 'PropsTable',
   props: {
@@ -51,9 +37,6 @@ export default defineComponent({
       type: Object as PropType<TextComponentProps>,
       required: true,
     },
-  },
-  components: {
-    RenderVnode,
   },
   emits: ['change'],
   setup(props, ctx) {
@@ -76,7 +59,7 @@ export default defineComponent({
               valueProp,
               eventName,
               events: {
-                [eventName]: (e: any) => {
+                ['on' + capitalizeFirstLetter(eventName)]: (e: any) => {
                   ctx.emit('change', {
                     key,
                     value: afterTransform ? afterTransform(e) : e,
@@ -91,24 +74,38 @@ export default defineComponent({
         {} as { [key: string]: FormProps }
       )
     })
-    return {
-      finalProps,
-    }
+    return () => (
+      <div>
+        {Object.keys(finalProps.value).map((key) => {
+          const value = finalProps.value[key]
+          const ComponentName = mapToComponent[value.component]
+          const subComponent = value.subComponent
+            ? mapToComponent[value.subComponent]
+            : null
+          const props = {
+            [value.valueProp]: value.value,
+            ...value.extraProps,
+            ...value.events,
+          }
+          return (
+            <div key={key} class="prop-item">
+              {value.text && <span>{value.text}</span>}
+              <div class="prop-component">
+                <ComponentName {...props}>
+                  {value.options &&
+                    value.options.map((option) => {
+                      return (
+                        <subComponent value={option.value}>
+                          {option.text}
+                        </subComponent>
+                      )
+                    })}
+                </ComponentName>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
   },
 })
-</script>
-
-<style scoped lang="less">
-.props-table {
-  .prop-item {
-    display: flex;
-    align-items: center;
-    &__label {
-      width: 4rem;
-    }
-    &__component {
-      width: 100%;
-    }
-  }
-}
-</style>
