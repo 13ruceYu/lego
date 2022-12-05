@@ -7,7 +7,8 @@ export interface TemplateProps {
   author: string
   copiedCount: number
 }
-const testData: TemplateProps[] = [
+
+export const testData: TemplateProps[] = [
   {
     id: 1,
     coverImg:
