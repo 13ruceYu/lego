@@ -37,7 +37,7 @@ export default defineComponent({
         fileInput.value.click()
       }
     }
-    const handleFileChange = (e: Event) => {
+    const handleFileChange = async (e: Event) => {
       const target = e.target as HTMLInputElement
       const files = target.files
       if (files) {
@@ -45,19 +45,18 @@ export default defineComponent({
         const formData = new FormData()
         formData.append(uploadedFile.name, uploadedFile)
         fileStatus.value = 'loading'
-        axios
-          .post(props.action, formData, {
+        try {
+          const resp = await axios.post(props.action, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
           })
-          .then((resp) => {
-            console.log(resp.data)
-            fileStatus.value = 'success'
-          })
-          .catch(() => {
-            fileStatus.value = 'error'
-          })
+          console.log(resp.data)
+          fileStatus.value = 'success'
+        } catch (error) {
+          console.log(error)
+          fileStatus.value = 'error'
+        }
       }
     }
 
